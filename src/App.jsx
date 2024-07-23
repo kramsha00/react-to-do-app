@@ -1,141 +1,19 @@
-import logo from "./logo.svg";
 import "./App.css";
-import Component from "./Component";
 import { useState } from "react";
 import React from "react";
 
 function App() {
-  const someTestStyle = {
-    background: "cyan",
-    color: "black",
-    fontSize: "30px",
-    fontWeight: "bold",
-    padding: "10px",
-  };
-
-  const [todos, setTodos] = useState([
-    {
-      id: 1,
-      title: "Learn react",
-      isComplete: false,
-    },
-    {
-      id: 2,
-      title: "Go grocery",
-      isComplete: true,
-    },
-    {
-      id: 3,
-      title: "Iron uniform",
-      isComplete: false,
-    },
-  ]);
-
-  const [todoInput, setTodoInput] = useState("");
-
-  const [todoId, setTodoId] = useState(4);
-
-  function addTodo(event) {
-    event.preventDefault();
-
-    if (todoInput.trim().length === 0) {
-      alert("Todo can't be empty");
-      return;
-    }
-
-    setTodos([
-      ...todos,
-      {
-        id: todoId,
-        title: todoInput,
-        isComplete: false,
-      },
-    ]);
-
-    setTodoInput("");
-    setTodoId((prevTodoId) => prevTodoId + 1);
-  }
-
-  function handleInput(event) {
-    setTodoInput(event.target.value);
-  }
-
-  function deleteTodo(id) {
-    console.log('deleting', id);
-    setTodos([...todos].filter(todo => todo.id !== id))
-  }
-
-//   return (
-//     <div className="todo-app-container">
-//       <div className="todo-app">
-//         <h2>Todo App</h2>
-//         <form action="#" onSubmit={addTodo}>
-//           <input
-//             type="text"
-//             className="todo-input"
-//             value={todoInput}
-//             placeholder="What do you need to do?"
-//             onChange={handleInput}
-//           />
-//         </form>
-//
-//         <ul className="todo-list">
-//           {todos.map((todo, index) => (
-//             <li key={todo.id} className="todo-item-container">
-//               <div className="todo-item">
-//                 <input type="checkbox" />
-//                 <span className="todo-item-label">
-//                   {index} - {todo.title}
-//                 </span>
-//                 {/* <input type="text" className="todo-item-input" value="Finish React Series" /> */}
-//               </div>
-//               <button onClick={() => deleteTodo(todo.id)} className="x-button">
-//                 <svg
-//                   className="x-button-icon"
-//                   fill="none"
-//                   viewBox="0 0 24 24"
-//                   stroke="currentColor"
-//                 >
-//                   <path
-//                     strokeLinecap="round"
-//                     strokeLinejoin="round"
-//                     strokeWidth={2}
-//                     d="M6 18L18 6M6 6l12 12"
-//                   />
-//                 </svg>
-//               </button>
-//             </li>
-//           ))}
-//         </ul>
-//         <div className="check-all-container">
-//           <div>
-//             <div className="button">Check All</div>
-//           </div>
-//           <span>3 items remaining</span>
-//         </div>
-//         <div className="other-buttons-container">
-//           <div>
-//             <button className="button filter-button filter-button-active">
-//               All
-//             </button>
-//             <button className="button filter-button">Active</button>
-//             <button className="button filter-button">Completed</button>
-//           </div>
-//           <div>
-//             <button className="button">Clear completed</button>
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-
   const [complaintText, setComplaintText] = useState('');
   const [responseText, setResponseText] = useState('');
   const [analysisResult, setAnalysisResult] = useState(null);
+  const [sourceLanguage, setSourceLanguage] = useState('en');
+  const [targetLanguage, setTargetLanguage] = useState('es');
+  const [translatedText, setTranslatedText] = useState('');
+  const [responseError, setResponseError] = useState('');
 
   const analyzeComplaint = async () => {
     try {
-      const response = await fetch('http://localhost:3000/analyze', {
+      const response = await fetch('http://localhost:3005/analyze', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -149,8 +27,25 @@ function App() {
     }
   };
 
+    const translateText = async () => {
+        try {
+            const response = await fetch('http://localhost:3005/translate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ text: complaintText, source: sourceLanguage, target: targetLanguage }),
+            });
+            const data = await response.json();
+            setTranslatedText(data.translatedText);
+        } catch (error) {
+            console.error('Error translating text:', error);
+        }
+    };
+
   const analyzeResponse = async () => {
     try {
+        console.log("translating")
       const response = await fetch('/api/analyze-response', {
         method: 'POST',
         headers: {
@@ -165,45 +60,29 @@ function App() {
     }
   };
 
-  // return (
-  //     <div>
-  //       <h1>Complaint Management System</h1>
-  //       <div>
-  //         <h2>Complaint</h2>
-  //         <textarea
-  //             value={complaintText}
-  //             onChange={(e) => setComplaintText(e.target.value)}
-  //         ></textarea>
-  //         <button onClick={analyzeComplaint}>Analyze Complaint</button>
-  //       </div>
-  //       <div>
-  //         <h2>Response</h2>
-  //         <textarea
-  //             value={responseText}
-  //             onChange={(e) => setResponseText(e.target.value)}
-  //         ></textarea>
-  //         <button onClick={analyzeResponse}>Analyze Response</button>
-  //       </div>
-  //       {analysisResult && (
-  //           <div>
-  //             <h2>Analysis</h2>
-  //             <p>Sentiment: {analysisResult.sentiment.ResultList[0].Sentiment}</p>
-  //             <h3>Key Phrases:</h3>
-  //             <ul>
-  //               {analysisResult.keyPhrases.ResultList[0].KeyPhrases.map((phrase, index) => (
-  //                   <li key={index}>{phrase.Text}</li>
-  //               ))}
-  //             </ul>
-  //             <h3>Entities:</h3>
-  //             <ul>
-  //               {analysisResult.entities.ResultList[0].Entities.map((entity, index) => (
-  //                   <li key={index}>{entity.Text}</li>
-  //               ))}
-  //             </ul>
-  //           </div>
-  //       )}
-  //     </div>
-  // );
+    const checkResponseQuality = (text) => {
+        const keywords = [
+            'sorry', 'apologize', 'understand', 'appreciate', 'thank you', 'concerned', 'care', 'hope', 'sorry for any inconvenience',
+            'resolve', 'fix', 'address', 'solution', 'action', 'improve', 'investigate', 'implement', 'plan',
+            'follow-up', 'update', 'check back', 'keep you informed', 'contact', 'reach out', 'let you know',
+            'clearly', 'precisely', 'detailed', 'explain', 'clarify', 'specify',
+            'assure', 'guarantee', 'committed', 'ensure', 'confirm', 'promise',
+            'feedback', 'improvement', 'suggestion', 'learn', 'enhance'
+        ];
+        const hasKeyword = keywords.some(keyword => text.toLowerCase().includes(keyword));
+
+        if (!hasKeyword) {
+            setResponseError('The response seems to be of low quality.');
+        } else {
+            setResponseError('');
+        }
+    };
+
+    const handleResponseChange = (event) => {
+        const text = event.target.value;
+        setResponseText(text);
+        checkResponseQuality(text);
+    };
 
   return (
       <div
@@ -217,7 +96,7 @@ function App() {
           }}
       >
         <h1 style={{ textAlign: 'center', marginBottom: '2rem' }}>Complaint Management System</h1>
-        <div style={{ marginBottom: '2rem' }}>
+        <div style={{ marginBottom: '2rem'}}>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '1rem' }}>Complaint</h2>
           <textarea
               style={{
@@ -250,69 +129,113 @@ function App() {
           >
             Analyze Complaint
           </button>
-        </div>
-        <div style={{ marginBottom: '2rem' }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '1rem' }}>Response</h2>
-          <textarea
-              style={{
-                width: '100%',
-                height: '150px',
-                padding: '1rem',
-                fontSize: '1rem',
-                border: '1px solid #ccc',
-                borderRadius: '4px',
-                resize: 'vertical',
-              }}
-              value={responseText}
-              onChange={(e) => setResponseText(e.target.value)}
-          ></textarea>
-          <button
-              style={{
-                display: 'block',
-                width: '100%',
-                padding: '0.75rem 1.5rem',
-                fontSize: '1rem',
-                fontWeight: 'bold',
-                color: '#fff',
-                backgroundColor: '#4CAF50',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                transition: 'background-color 0.3s ease',
-              }}
-              onClick={analyzeResponse}
-          >
-            Analyze Response
-          </button>
-        </div>
-        {analysisResult && (
-            <div style={{ marginBottom: '2rem' }}>
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '1rem' }}>Analysis</h2>
-              <p style={{ marginBottom: '0.5rem' }}>
-                Sentiment: <span style={{ fontWeight: 'bold' }}>{analysisResult.sentiment.ResultList[0].Sentiment}</span>
-              </p>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', marginTop: '1.5rem', marginBottom: '0.5rem' }}>
-                Key Phrases:
-              </h3>
-              <ul style={{ listStyleType: 'none', padding: 0 }}>
-                {analysisResult.keyPhrases.ResultList[0].KeyPhrases.map((phrase, index) => (
-                    <li key={index} style={{ marginBottom: '0.5rem' }}>
-                      {phrase.Text}
-                    </li>
-                ))}
-              </ul>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', marginTop: '1.5rem', marginBottom: '0.5rem' }}>
-                Entities:
-              </h3>
-              <ul style={{ listStyleType: 'none', padding: 0 }}>
-                {analysisResult.entities.ResultList[0].Entities.map((entity, index) => (
-                    <li key={index} style={{ marginBottom: '0.5rem' }}>
-                      {entity.Text}
-                    </li>
-                ))}
-              </ul>
+            {analysisResult && (
+                <div style={{ marginBottom: '2rem' }}>
+                    <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '1rem' }}>Analysis</h2>
+                    <p style={{ marginBottom: '0.5rem' }}>
+                        Sentiment: <span style={{ fontWeight: 'bold' }}>{analysisResult.sentiment.ResultList[0].Sentiment}</span>
+                    </p>
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', marginTop: '1.5rem', marginBottom: '0.5rem' }}>
+                        Entities:
+                    </h3>
+                    {analysisResult.entities.ResultList[0].Entities.map((entity, index) => (
+                        <span key={index} style={{ marginBottom: '0.5rem' }}>
+                            {entity.Text},
+                        </span>
+                    ))}
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', marginTop: '1.5rem', marginBottom: '0.5rem' }}>
+                        Key Phrases:
+                    </h3>
+                    {analysisResult.keyPhrases.ResultList[0].KeyPhrases.map((phrase, index) => (
+                        <span key={index} style={{ marginBottom: '0.5rem' }}>
+                            {phrase.Text},
+                        </span>
+                    ))}
+                </div>
+            )}
+            <div style={{ marginTop: '2rem' }}>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '1rem' }}>Translate Complaint</h2>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                    <select value={sourceLanguage} onChange={(e) => setSourceLanguage(e.target.value)}>
+                        <option value="en">English</option>
+                        <option value="ar">Arabic</option>
+                        <option value="ur">Urdu</option>
+                        {/* Add more languages as needed */}
+                    </select>
+                    <select value={targetLanguage} onChange={(e) => setTargetLanguage(e.target.value)}>
+                        <option value="en">English</option>
+                        <option value="ar">Arabic</option>
+                        <option value="ur">Urdu</option>
+                        {/* Add more languages as needed */}
+                    </select>
+                </div>
+                <button
+                    style={{
+                        display: 'block',
+                        width: '100%',
+                        padding: '0.75rem 1.5rem',
+                        fontSize: '1rem',
+                        fontWeight: 'bold',
+                        color: '#fff',
+                        backgroundColor: '#4CAF50',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.3s ease',
+                    }}
+                    onClick={translateText}
+                >
+                    Translate
+                </button>
+                {translatedText && (
+                    <div style={{ marginTop: '1rem' }}>
+                        <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Translated Text:</h3>
+                        <p>{translatedText}</p>
+                    </div>
+                )}
             </div>
-        )}
+        </div>
+          <hr />
+          <div style={{ marginBottom: '2rem' , marginTop: '2rem' }}>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '1rem' }}>Response</h2>
+              <textarea
+                  style={{
+                      width: '100%',
+                      height: '150px',
+                      padding: '1rem',
+                      fontSize: '1rem',
+                      border: `1px solid ${responseError ? 'red' : '#ccc'}`,
+                      borderRadius: '4px',
+                      resize: 'vertical',
+                  }}
+                  value={responseText}
+                  onChange={handleResponseChange}
+              ></textarea>
+              {responseError && (
+                  <p style={{ color: 'red', fontSize: '0.875rem', marginTop: '0.5rem' }}>
+                      {responseError}
+                  </p>
+              )}
+              {/*<button*/}
+              {/*    style={{*/}
+              {/*        display: 'block',*/}
+              {/*        width: '100%',*/}
+              {/*        padding: '0.75rem 1.5rem',*/}
+              {/*        fontSize: '1rem',*/}
+              {/*        fontWeight: 'bold',*/}
+              {/*        color: '#fff',*/}
+              {/*        backgroundColor: '#4CAF50',*/}
+              {/*        border: 'none',*/}
+              {/*        borderRadius: '4px',*/}
+              {/*        cursor: 'pointer',*/}
+              {/*        transition: 'background-color 0.3s ease',*/}
+              {/*        marginTop: '1rem',*/}
+              {/*    }}*/}
+              {/*    onClick={analyzeResponse}*/}
+              {/*>*/}
+              {/*    Analyze Response*/}
+              {/*</button>*/}
+          </div>
       </div>
   );
 }
